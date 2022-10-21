@@ -166,8 +166,9 @@ int k_means(Ponto *v, Ponto *clusters){
     
     while(muda){
 
-        muda = k_meansAux(v,clusters);
-        i++;
+        if(muda = k_meansAux(v,clusters)){
+            i++;
+        }
 
     }
 
