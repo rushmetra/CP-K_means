@@ -20,6 +20,7 @@ void inicializa(Ponto *v, Ponto *clusters){
   
     srand(10);
     Ponto p;
+    float distance, min = 1;
     p.cluster=-1;
 
     for(int i = 0; i < N; i++) {
@@ -30,27 +31,57 @@ void inicializa(Ponto *v, Ponto *clusters){
 
     }
 
+//
     for(int i = 0; i < K; i++) {
         clusters[i].x = v[i].x;
         clusters[i].y = v[i].y;
         clusters[i].cluster = 0;
     }
 
-    float distance, min = 1;
+    
 
     for(int i = 0; i < N; i++){
 
-        for(int j=0;j<K;j++){
+        // clusters[v[i].cluster].cluster--;
+        // v[i].cluster=0;
 
-            distance = sqrt(pow((v[i].x - clusters[j].x),2) + pow((v[i].y - clusters[j].y),2));
-            if(distance < min){
+        distance = sqrt(pow( (v[i].x - clusters[0].x),2) + pow( (v[i].y - clusters[0].y),2));
+        if(distance < min){
                 
-                min = distance;
-                clusters[v[i].cluster].cluster--;
-                v[i].cluster=j;
-                clusters[j].cluster++;
+            min = distance;
+            clusters[v[i].cluster].cluster--;
+            v[i].cluster=0;
+            clusters[0].cluster++;
 
-            }
+        }
+
+        distance = sqrt(pow( (v[i].x - clusters[1].x),2) + pow( (v[i].y - clusters[1].y),2));
+        if(distance < min){
+                
+            min = distance;
+            clusters[v[i].cluster].cluster--;
+            v[i].cluster=1;
+            clusters[1].cluster++;
+
+        }
+
+        distance = sqrt(pow( (v[i].x - clusters[2].x),2) + pow( (v[i].y - clusters[2].y),2));
+        if(distance < min){
+                
+            min = distance;
+            clusters[v[i].cluster].cluster--;
+            v[i].cluster=2;
+            clusters[2].cluster++;
+
+        }
+
+        distance = sqrt(pow( (v[i].x - clusters[3].x),2) + pow( (v[i].y - clusters[3].y),2));
+        if(distance < min){
+                
+            min = distance;
+            clusters[v[i].cluster].cluster--;
+            v[i].cluster=3;
+            clusters[3].cluster++;
 
         }
 
@@ -117,26 +148,54 @@ int k_meansAux(Ponto *v, Ponto *clusters){
 
     for(int i = 0; i < N; i++){
 
-        for(int j=0;j<K;j++){
-
-            distance = sqrt(pow( (v[i].x - centroid[j].x),2) + pow( (v[i].y - centroid[j].y),2));
-            if(distance < min){
+        distance = sqrt(pow( (v[i].x - centroid[0].x),2) + pow( (v[i].y - centroid[0].y),2));
+        if(distance < min
+        ){
                 
-                min = distance;
-                clusters[v[i].cluster].cluster--;
-                v[i].cluster=j;
-                clusters[j].cluster++;
-
-            }
+            min = distance;
+            clusters[v[i].cluster].cluster--;
+            v[i].cluster=0;
+            clusters[0].cluster++;
 
         }
 
+        distance = sqrt(pow( (v[i].x - centroid[1].x),2) + pow( (v[i].y - centroid[1].y),2));
+        if(distance < min){
+                
+            min = distance;
+            clusters[v[i].cluster].cluster--;
+            v[i].cluster=1;
+            clusters[1].cluster++;
+
+        }
+
+        distance = sqrt(pow( (v[i].x - centroid[2].x),2) + pow( (v[i].y - centroid[2].y),2));
+        if(distance < min){
+                
+            min = distance;
+            clusters[v[i].cluster].cluster--;
+            v[i].cluster=2;
+            clusters[2].cluster++;
+
+        }
+
+        distance = sqrt(pow( (v[i].x - centroid[3].x),2) + pow( (v[i].y - centroid[3].y),2));
+        if(distance < min){
+                
+            min = distance;
+            clusters[v[i].cluster].cluster--;
+            v[i].cluster=3;
+            clusters[3].cluster++;
+
+        }
+        
             min = 1;
 
     }
 
     int muda;
 
+//
     for(int i = 0; i<K; i++){
         if(!(centroid[i].x==clusters[i].x && centroid[i].y==clusters[i].y)){
             muda = 1;
@@ -166,7 +225,7 @@ int k_means(Ponto *v, Ponto *clusters){
     
     while(muda){
 
-        if(muda = k_meansAux(v,clusters)){
+        if((muda = k_meansAux(v,clusters))){
             i++;
         }
 
@@ -190,11 +249,12 @@ int main(){
     inicializa(v,clusters);
     iter = k_means(v,clusters);
 
+    printf("N = %d, K = %d\n",N,K);
     printf("Center: (%.3f,%.3f), Size: %d\n",clusters[0].x,clusters[0].y,clusters[0].cluster);
     printf("Center: (%.3f,%.3f), Size: %d\n",clusters[1].x,clusters[1].y,clusters[1].cluster);
     printf("Center: (%.3f,%.3f), Size: %d\n",clusters[2].x,clusters[2].y,clusters[2].cluster);
     printf("Center: (%.3f,%.3f), Size: %d\n",clusters[3].x,clusters[3].y,clusters[3].cluster);
-    printf("Iterações: %d\n",iter);
+    printf("Iterations: %d\n",iter);
 
     return 0;
 
