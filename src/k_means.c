@@ -45,7 +45,9 @@ void inicializa(Ponto *v, Ponto *clusters){
         // clusters[v[i].cluster].cluster--;
         // v[i].cluster=0;
 
-        distance = sqrt(pow( (v[i].x - clusters[0].x),2) + pow( (v[i].y - clusters[0].y),2));
+
+        // FIXME: Testar se tirar a pow e simplesmente multiplicar duas vezes é mais eficiente
+        distance = (((v[i].x - clusters[0].x)*(v[i].x - clusters[0].x)) + ((v[i].y - clusters[0].y)*(v[i].y - clusters[0].y)));
         if(distance < min){
                 
             min = distance;
@@ -55,7 +57,7 @@ void inicializa(Ponto *v, Ponto *clusters){
 
         }
 
-        distance = sqrt(pow( (v[i].x - clusters[1].x),2) + pow( (v[i].y - clusters[1].y),2));
+        distance = (((v[i].x - clusters[1].x)*(v[i].x - clusters[1].x)) + ((v[i].y - clusters[1].y)*(v[i].y - clusters[1].y)));
         if(distance < min){
                 
             min = distance;
@@ -65,7 +67,7 @@ void inicializa(Ponto *v, Ponto *clusters){
 
         }
 
-        distance = sqrt(pow( (v[i].x - clusters[2].x),2) + pow( (v[i].y - clusters[2].y),2));
+        distance = (((v[i].x - clusters[2].x)*(v[i].x - clusters[2].x)) + ((v[i].y - clusters[2].y)*(v[i].y - clusters[2].y)));
         if(distance < min){
                 
             min = distance;
@@ -75,7 +77,7 @@ void inicializa(Ponto *v, Ponto *clusters){
 
         }
 
-        distance = sqrt(pow( (v[i].x - clusters[3].x),2) + pow( (v[i].y - clusters[3].y),2));
+        distance = (( (v[i].x - clusters[3].x)*(v[i].x - clusters[3].x)) + ((v[i].y - clusters[3].y)*(v[i].y - clusters[3].y)));
         if(distance < min){
                 
             min = distance;
@@ -148,7 +150,7 @@ int k_meansAux(Ponto *v, Ponto *clusters){
 
     for(int i = 0; i < N; i++){
 
-        distance = sqrt(pow( (v[i].x - centroid[0].x),2) + pow( (v[i].y - centroid[0].y),2));
+        distance = (((v[i].x - centroid[0].x)*(v[i].x - centroid[0].x)) + ( (v[i].y - centroid[0].y)* (v[i].y - centroid[0].y)));
         if(distance < min
         ){
                 
@@ -159,7 +161,7 @@ int k_meansAux(Ponto *v, Ponto *clusters){
 
         }
 
-        distance = sqrt(pow( (v[i].x - centroid[1].x),2) + pow( (v[i].y - centroid[1].y),2));
+        distance = (((v[i].x - centroid[1].x)*(v[i].x - centroid[1].x)) + ((v[i].y - centroid[1].y)*(v[i].y - centroid[1].y)));
         if(distance < min){
                 
             min = distance;
@@ -169,7 +171,7 @@ int k_meansAux(Ponto *v, Ponto *clusters){
 
         }
 
-        distance = sqrt(pow( (v[i].x - centroid[2].x),2) + pow( (v[i].y - centroid[2].y),2));
+        distance = (((v[i].x - centroid[2].x)*(v[i].x - centroid[2].x)) + ( (v[i].y - centroid[2].y)*(v[i].y - centroid[2].y)));
         if(distance < min){
                 
             min = distance;
@@ -179,7 +181,7 @@ int k_meansAux(Ponto *v, Ponto *clusters){
 
         }
 
-        distance = sqrt(pow( (v[i].x - centroid[3].x),2) + pow( (v[i].y - centroid[3].y),2));
+        distance = (((v[i].x - centroid[3].x)*(v[i].x - centroid[3].x)) + ((v[i].y - centroid[3].y)*(v[i].y - centroid[3].y)));
         if(distance < min){
                 
             min = distance;
