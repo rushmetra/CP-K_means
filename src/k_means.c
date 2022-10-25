@@ -20,6 +20,7 @@ void inicializa(Ponto *v, Ponto *clusters){
   
     srand(10);
     Ponto p;
+    float distance, min = 1;
     p.cluster=-1;
 
     for(int i = 0; i < N; i++) {
@@ -36,17 +37,25 @@ void inicializa(Ponto *v, Ponto *clusters){
         clusters[i].cluster = 0;
     }
 
-    float distance, min = 1;
 
     for(int i = 0; i < N; i++){
 
-        for(int j=0;j<K;j++){
+        distance = ((v[i].x - clusters[0].x) * (v[i].x - clusters[0].x)) + ((v[i].y - clusters[0].y) * (v[i].y - clusters[0].y));
+        if(distance < min){
+
+            min = distance;                   
+            v[i].cluster=0;
+            clusters[0].cluster++;
+
+        }
+
+        for(int j=1;j<K;j++){
 
             distance = ((v[i].x - clusters[j].x) * (v[i].x - clusters[j].x)) + ((v[i].y - clusters[j].y) * (v[i].y - clusters[j].y));
             if(distance < min){
                 
                 min = distance;
-                clusters[v[i].cluster].cluster--;
+                clusters[v[i].cluster].cluster--;                 
                 v[i].cluster=j;
                 clusters[j].cluster++;
 
@@ -63,57 +72,30 @@ void inicializa(Ponto *v, Ponto *clusters){
 
 int k_meansAux(Ponto *v, Ponto *clusters){
     
-    float soma0X=0, soma1X=0, soma2X=0, soma3X=0;
-    float soma0Y=0, soma1Y=0, soma2Y=0, soma3Y=0;
-    float n_pontos0=0, n_pontos1=0, n_pontos2=0, n_pontos3=0;
-    Ponto centroid[K];
+    Ponto *medias = malloc(sizeof(Ponto)*K);
+    Ponto *centroid = malloc(sizeof(Ponto)*K);
+    float distance, min = 1;
+
+    for(int i=0;i<K;i++){
+        medias[i].x = 0;
+        medias[i].y = 0;
+        medias[i].cluster = 0; //aqui é número de pontos
+    }
 
     for(int i = 0; i < N; i++){
-
-        switch (v[i].cluster){
-
-            case 0:
-
-                soma0X+=v[i].x;
-                soma0Y+=v[i].y;
-                n_pontos0++;
-                break;
-
-            case 1:
-
-                soma1X+=v[i].x;
-                soma1Y+=v[i].y;
-                n_pontos1++;
-                break;
-
-            case 2:
-
-                soma2X+=v[i].x;
-                soma2Y+=v[i].y;
-                n_pontos2++;
-                break;
-
-            case 3:
-
-                soma3X+=v[i].x;
-                soma3Y+=v[i].y;
-                n_pontos3++;
-                break;
-            }
+    
+        medias[v[i].cluster].x+=v[i].x;
+        medias[v[i].cluster].y+=v[i].y;
+        medias[v[i].cluster].cluster++; //aqui é número de pontos       
 
     }
 
-    centroid[0].x = soma0X/n_pontos0;
-    centroid[0].y = soma0Y/n_pontos0;
-    centroid[1].x = soma1X/n_pontos1;
-    centroid[1].y = soma1Y/n_pontos1;
-    centroid[2].x = soma2X/n_pontos2;
-    centroid[2].y = soma2Y/n_pontos2;
-    centroid[3].x = soma3X/n_pontos3;
-    centroid[3].y = soma3Y/n_pontos3;
+    for(int i=0;i<K;i++){
 
+        centroid[i].x = medias[i].x/medias[i].cluster; //aqui é número de pontos
+        centroid[i].y = medias[i].y/medias[i].cluster; //aqui é número de pontos
 
-    float distance, min = 1;
+    }
 
     for(int i = 0; i < N; i++){
 
@@ -148,15 +130,10 @@ int k_meansAux(Ponto *v, Ponto *clusters){
     }
 
     
-
-    clusters[0].x = centroid[0].x;
-    clusters[0].y = centroid[0].y;
-    clusters[1].x = centroid[1].x;
-    clusters[1].y = centroid[1].y;
-    clusters[2].x = centroid[2].x;
-    clusters[2].y = centroid[2].y;
-    clusters[3].x = centroid[3].x;
-    clusters[3].y = centroid[3].y;
+    for(int i=0;i<K;i++){
+        clusters[i].x = centroid[i].x;
+        clusters[i].y = centroid[i].y;
+    }
 
     return muda;
 
