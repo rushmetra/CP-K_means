@@ -9,7 +9,7 @@ typedef struct Ponto{
 
     float x;
     float y;
-    int cluster;
+    int cluster;//se for centroid é size
 
 }Ponto;
 
@@ -20,7 +20,6 @@ void inicializa(Ponto *v, Ponto *clusters){
   
     srand(10);
     Ponto p;
-    float distance, min = 1;
     p.cluster=-1;
 
     for(int i = 0; i < N; i++) {
@@ -31,59 +30,27 @@ void inicializa(Ponto *v, Ponto *clusters){
 
     }
 
-//
     for(int i = 0; i < K; i++) {
         clusters[i].x = v[i].x;
         clusters[i].y = v[i].y;
         clusters[i].cluster = 0;
     }
 
-    
+    float distance, min = 1;
 
     for(int i = 0; i < N; i++){
 
-        // clusters[v[i].cluster].cluster--;
-        // v[i].cluster=0;
+        for(int j=0;j<K;j++){
 
-
-        // FIXME: Testar se tirar a pow e simplesmente multiplicar duas vezes é mais eficiente
-        distance = (((v[i].x - clusters[0].x)*(v[i].x - clusters[0].x)) + ((v[i].y - clusters[0].y)*(v[i].y - clusters[0].y)));
-        if(distance < min){
+            distance = ((v[i].x - clusters[j].x) * (v[i].x - clusters[j].x)) + ((v[i].y - clusters[j].y) * (v[i].y - clusters[j].y));
+            if(distance < min){
                 
-            min = distance;
-            clusters[v[i].cluster].cluster--;
-            v[i].cluster=0;
-            clusters[0].cluster++;
+                min = distance;
+                clusters[v[i].cluster].cluster--;
+                v[i].cluster=j;
+                clusters[j].cluster++;
 
-        }
-
-        distance = (((v[i].x - clusters[1].x)*(v[i].x - clusters[1].x)) + ((v[i].y - clusters[1].y)*(v[i].y - clusters[1].y)));
-        if(distance < min){
-                
-            min = distance;
-            clusters[v[i].cluster].cluster--;
-            v[i].cluster=1;
-            clusters[1].cluster++;
-
-        }
-
-        distance = (((v[i].x - clusters[2].x)*(v[i].x - clusters[2].x)) + ((v[i].y - clusters[2].y)*(v[i].y - clusters[2].y)));
-        if(distance < min){
-                
-            min = distance;
-            clusters[v[i].cluster].cluster--;
-            v[i].cluster=2;
-            clusters[2].cluster++;
-
-        }
-
-        distance = (( (v[i].x - clusters[3].x)*(v[i].x - clusters[3].x)) + ((v[i].y - clusters[3].y)*(v[i].y - clusters[3].y)));
-        if(distance < min){
-                
-            min = distance;
-            clusters[v[i].cluster].cluster--;
-            v[i].cluster=3;
-            clusters[3].cluster++;
+            }
 
         }
 
@@ -150,63 +117,37 @@ int k_meansAux(Ponto *v, Ponto *clusters){
 
     for(int i = 0; i < N; i++){
 
-        distance = (((v[i].x - centroid[0].x)*(v[i].x - centroid[0].x)) + ( (v[i].y - centroid[0].y)* (v[i].y - centroid[0].y)));
-        if(distance < min
-        ){
+        for(int j=0;j<K;j++){
+
+            distance = ( (v[i].x - centroid[j].x) * (v[i].x - centroid[j].x)) + ( (v[i].y - centroid[j].y) * (v[i].y - centroid[j].y));
+            if(distance < min){
                 
-            min = distance;
-            clusters[v[i].cluster].cluster--;
-            v[i].cluster=0;
-            clusters[0].cluster++;
+                min = distance;
+                clusters[v[i].cluster].cluster--;
+                v[i].cluster=j;
+                clusters[j].cluster++;
+
+            }
 
         }
 
-        distance = (((v[i].x - centroid[1].x)*(v[i].x - centroid[1].x)) + ((v[i].y - centroid[1].y)*(v[i].y - centroid[1].y)));
-        if(distance < min){
-                
-            min = distance;
-            clusters[v[i].cluster].cluster--;
-            v[i].cluster=1;
-            clusters[1].cluster++;
-
-        }
-
-        distance = (((v[i].x - centroid[2].x)*(v[i].x - centroid[2].x)) + ( (v[i].y - centroid[2].y)*(v[i].y - centroid[2].y)));
-        if(distance < min){
-                
-            min = distance;
-            clusters[v[i].cluster].cluster--;
-            v[i].cluster=2;
-            clusters[2].cluster++;
-
-        }
-
-        distance = (((v[i].x - centroid[3].x)*(v[i].x - centroid[3].x)) + ((v[i].y - centroid[3].y)*(v[i].y - centroid[3].y)));
-        if(distance < min){
-                
-            min = distance;
-            clusters[v[i].cluster].cluster--;
-            v[i].cluster=3;
-            clusters[3].cluster++;
-
-        }
-        
             min = 1;
 
     }
 
     int muda;
 
-//
     for(int i = 0; i<K; i++){
         if(!(centroid[i].x==clusters[i].x && centroid[i].y==clusters[i].y)){
             muda = 1;
             break;
         }
-        else
+        else{
             muda = 0;
-
+        }
     }
+
+    
 
     clusters[0].x = centroid[0].x;
     clusters[0].y = centroid[0].y;
@@ -252,10 +193,10 @@ int main(){
     iter = k_means(v,clusters);
 
     printf("N = %d, K = %d\n",N,K);
-    printf("Center: (%.3f,%.3f), Size: %d\n",clusters[0].x,clusters[0].y,clusters[0].cluster);
-    printf("Center: (%.3f,%.3f), Size: %d\n",clusters[1].x,clusters[1].y,clusters[1].cluster);
-    printf("Center: (%.3f,%.3f), Size: %d\n",clusters[2].x,clusters[2].y,clusters[2].cluster);
-    printf("Center: (%.3f,%.3f), Size: %d\n",clusters[3].x,clusters[3].y,clusters[3].cluster);
+    
+    for(int i=0;i<K;i++){
+        printf("Center: (%.3f,%.3f), Size: %d\n",clusters[i].x,clusters[i].y,clusters[i].cluster);
+    }
     printf("Iterations: %d\n",iter);
 
     return 0;
