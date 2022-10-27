@@ -13,7 +13,7 @@ typedef struct Cluster{
 }Cluster;
 
 
-static inline void inicializa(float *x, float *y, Cluster *clusters){
+void inicializa(float *x, float *y, Cluster *clusters){
   
     srand(10);
 
@@ -33,7 +33,7 @@ static inline void inicializa(float *x, float *y, Cluster *clusters){
 }
 
 
-inline int k_meansAux(float *x, float *y, Cluster *clusters){
+int k_meansAux(float *x, float *y, Cluster *clusters){
     
     Cluster *centroid_novo = malloc(sizeof(Cluster)*K);
     float x_centroid[K], y_centroid[K], nr_pontos[K];

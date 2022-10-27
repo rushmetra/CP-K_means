@@ -4,7 +4,7 @@ SRC = src/
 INCLUDES = include/
 EXEC = k_means
 
-CFLAGS = -O2 -Winline -Wall
+CFLAGS = -O2 -Wall
 
 .DEFAULT_GOAL = k_means
 
