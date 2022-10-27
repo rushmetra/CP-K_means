@@ -79,7 +79,7 @@ int k_meansAux(float *x, float *y, Cluster *clusters){
     }
 
     for(i = 0; i<K; i++){
-        if(!(centroid_novo[i].x==clusters[i].x && centroid_novo[i].y==clusters[i].y)){
+        if((centroid_novo[i].x!=clusters[i].x || centroid_novo[i].y!=clusters[i].y)){
             muda = 1;
             break;
         }
