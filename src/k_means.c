@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 10000000
-#define K 4
+//#define N 10000000
+//#define K 32
 
 typedef struct Cluster{
 
@@ -13,7 +13,7 @@ typedef struct Cluster{
 }Cluster;
 
 
-void inicializa(float *x, float *y, Cluster *clusters){
+void inicializa(float *x, float *y, Cluster *clusters, int N, int K){
   
     srand(10);
 
@@ -33,14 +33,13 @@ void inicializa(float *x, float *y, Cluster *clusters){
 }
 
 
-int k_meansAux(float *x, float *y, Cluster *clusters){
+int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K){
     
     Cluster *centroid_novo = malloc(sizeof(Cluster)*K);
     float x_centroid[K], y_centroid[K], nr_pontos[K];
-    float distance, min = 1;
-    int indMin = 0, muda = 1, i, j;
     
-    for(i = 0; i < K; i++){
+    #pragma omp parallel for
+    for(int i = 0; i < K; i++){
         x_centroid[i] = 0;
         y_centroid[i] = 0;
         nr_pontos[i] = 0;
@@ -50,27 +49,48 @@ int k_meansAux(float *x, float *y, Cluster *clusters){
         centroid_novo[i].nr_pontos = 0;
     }
 
-    for(i = 0; i < N; i++){
+    int indMin = 0, muda = 1;
+    float distance, min = 1;
+    
+    #pragma omp parallel for private(min,indMin,distance) reduction(+:x_centroid,y_centroid,nr_pontos)
+    for(int i = 0; i < N; i++){
 
         // Primeira iteração
         min = ((x[i] - clusters[0].x) * (x[i] - clusters[0].x)) + ((y[i] - clusters[0].y) * (y[i] - clusters[0].y));
         indMin = 0;
+        //float *arr = malloc(sizeof(float)*K);
 
-        for(j=1;j<K;j++){
+        //#pragma omp parallel for
+        for(int j=0;j<K;j++){
 
+            //arr[j] = ((x[i] - clusters[j].x) * (x[i] - clusters[j].x)) + ((y[i] - clusters[j].y) * (y[i] - clusters[j].y));
+            
             distance = ((x[i] - clusters[j].x) * (x[i] - clusters[j].x)) + ((y[i] - clusters[j].y) * (y[i] - clusters[j].y));
+
             if(distance < min){
                 min = distance;
                 indMin = j;
             }
             
         }
+
+        // min = arr[0];
+        // for(int j=1;j<K;j++){
+
+        //     //if(arr[j]<min) indMin=j-1;
+        //     //else indMin=j;
+        //     indMin = arr[j]<min ? j-1 : j;
+
+        // }
+    
         nr_pontos[indMin] += 1;
         x_centroid[indMin] += x[i];
         y_centroid[indMin] += y[i];
+    
     }
 
-    for(i = 0; i < K; i++){
+    #pragma omp parallel for
+    for(int i = 0; i < K; i++){
 
         centroid_novo[i].x = x_centroid[i]/nr_pontos[i];
         centroid_novo[i].y = y_centroid[i]/nr_pontos[i]; 
@@ -78,7 +98,7 @@ int k_meansAux(float *x, float *y, Cluster *clusters){
 
     }
 
-    for(i = 0; i<K; i++){
+    for(int i = 0; i<K; i++){
         if((centroid_novo[i].x!=clusters[i].x || centroid_novo[i].y!=clusters[i].y)){
             muda = 1;
             break;
@@ -88,7 +108,8 @@ int k_meansAux(float *x, float *y, Cluster *clusters){
         }
     }
     
-    for(i=0;i<K;i++){
+    #pragma omp parallel for
+    for(int i=0;i<K;i++){
         clusters[i].x = centroid_novo[i].x;
         clusters[i].y = centroid_novo[i].y;
         clusters[i].nr_pontos = centroid_novo[i].nr_pontos;
@@ -98,11 +119,12 @@ int k_meansAux(float *x, float *y, Cluster *clusters){
 
 }
 
-int k_means(float *x, float *y, Cluster *clusters){
+int k_means(float *x, float *y, Cluster *clusters, int N, int K){
 
     int i = 0;
     
-    while(k_meansAux(x,y,clusters)){
+    while(i<20){
+        k_meansAux(x,y,clusters, N, K);
         i++;
     }
 
@@ -112,18 +134,20 @@ int k_means(float *x, float *y, Cluster *clusters){
 
 
 
-int main(){
+int main(int argc, char* argv[]){
 
     float *x, *y;
     Cluster *clusters;
     int iter;
+    int N = atoi(argv[1]);
+    int K = atoi(argv[2]);
 
     x = malloc(sizeof(float)*N);
     y = malloc(sizeof(float)*N);
     clusters = malloc(sizeof(Cluster)*K);
 
-    inicializa(x,y,clusters);
-    iter = k_means(x,y,clusters);
+    inicializa(x,y,clusters, N, K);
+    iter = k_means(x,y,clusters, N, K);
 
     printf("N = %d, K = %d\n",N,K);
     

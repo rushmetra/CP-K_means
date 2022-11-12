@@ -1,7 +1,6 @@
 CC = gcc
 BIN = bin/
 SRC = src/
-INCLUDES = include/
 EXEC = k_means
 
 CFLAGS = -O2 -Wall
@@ -15,4 +14,4 @@ clean:
 	rm -r bin/*
 
 run:
-	./$(BIN)$(EXEC)
+	./$(BIN)$(EXEC) 10000000 $(CP_CLUSTERS)
