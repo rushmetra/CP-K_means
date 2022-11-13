@@ -2,6 +2,7 @@ CC = gcc
 BIN = bin/
 SRC = src/
 EXEC = k_means
+THREADS = 8
 
 CFLAGS = -O2 -Wall
 
@@ -13,5 +14,8 @@ k_means: $(SRC)k_means.c
 clean:
 	rm -r bin/*
 
-run:
-	./$(BIN)$(EXEC) 10000000 $(CP_CLUSTERS)
+runseq:
+./$(BIN)$(EXEC) 10000000 $(CP_CLUSTERS)
+
+runpar:
+./$(BIN)$(EXEC) 10000000 $(CP_CLUSTERS) $THREADS

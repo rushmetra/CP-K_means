@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-//#define N 10000000
-//#define K 32
+#include <omp.h>
 
 typedef struct Cluster{
 
@@ -60,31 +58,19 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K){
         // Primeira iteração
         min = ((x[i] - clusters[0].x) * (x[i] - clusters[0].x)) + ((y[i] - clusters[0].y) * (y[i] - clusters[0].y));
         indMin = 0;
-        //float *arr = malloc(sizeof(float)*K);
 
-        //#pragma omp parallel for private(min,indMin,distance)// aqui entra num loop "infinito"
+        //#pragma omp parallel for // aqui entra num loop "infinito"
         for(int j=1;j<K;j++){
-
-            //arr[j] = ((x[i] - clusters[j].x) * (x[i] - clusters[j].x)) + ((y[i] - clusters[j].y) * (y[i] - clusters[j].y));
             
             distance = ((x[i] - clusters[j].x) * (x[i] - clusters[j].x)) + ((y[i] - clusters[j].y) * (y[i] - clusters[j].y));
 
             if(distance < min){
-                min = distance;
-                indMin = j;
+               min = distance;
+               indMin = j;
             }
             
         }
 
-        // min = arr[0];
-        // for(int j=1;j<K;j++){
-
-        //     //if(arr[j]<min) indMin=j-1;
-        //     //else indMin=j;
-        //     indMin = arr[j]<min ? j-1 : j;
-
-        // }
-    
         nr_pontos[indMin] += 1;
         x_centroid[indMin] += x[i];
         y_centroid[indMin] += y[i];
@@ -101,15 +87,9 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K){
     }
 
     #pragma omp parallel for reduction(||:muda)
-    for(int i = 0; i<K; i++){
-        if((centroid_novo[i].x!=clusters[i].x || centroid_novo[i].y!=clusters[i].y)){
-            muda = 1;
-            //break;
-        }
-        else{
-            muda = 0;
-        }
-    }
+    for(int i = 0; i<K; i++) 
+        muda = muda || (centroid_novo[i].x!=clusters[i].x || centroid_novo[i].y!=clusters[i].y);
+    
     
     #pragma omp parallel for
     for(int i=0;i<K;i++){
@@ -126,12 +106,12 @@ int k_means(float *x, float *y, Cluster *clusters, int N, int K){
 
     int i = 0;
     
-    while(i<20){
+    while(i<=20){
         k_meansAux(x,y,clusters, N, K);
         i++;
     }
 
-    return i;
+    return i-1;
 
 }
 
@@ -144,11 +124,15 @@ int main(int argc, char* argv[]){
     int iter;
     int N = atoi(argv[1]);
     int K = atoi(argv[2]);
-
     x = malloc(sizeof(float)*N);
     y = malloc(sizeof(float)*N);
     clusters = malloc(sizeof(Cluster)*K);
 
+    #ifdef _OPENMP
+    int nThreads = atoi(argv[3]);
+    omp_set_num_threads(nThreads);
+    #endif
+    
     inicializa(x,y,clusters, N, K);
     iter = k_means(x,y,clusters, N, K);
 
@@ -158,6 +142,7 @@ int main(int argc, char* argv[]){
         printf("Center: (%.3f,%.3f), Size: %d\n",clusters[i].x,clusters[i].y,clusters[i].nr_pontos);
     }
     printf("Iterations: %d\n",iter);
+
 
     return 0;
 
