@@ -17,6 +17,7 @@ void inicializa(float *x, float *y, Cluster *clusters, int N, int K){
   
     srand(10);
 
+    // O rand não é thread safe
     for(int i = 0; i < N; i++) {
 
         x[i] = (float) rand() / RAND_MAX;
@@ -24,6 +25,7 @@ void inicializa(float *x, float *y, Cluster *clusters, int N, int K){
 
     }
 
+    #pragma omp parallel for
     for(int i = 0; i < K; i++) {
         clusters[i].x = x[i];
         clusters[i].y = y[i];
@@ -49,7 +51,7 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K){
         centroid_novo[i].nr_pontos = 0;
     }
 
-    int indMin = 0, muda = 1;
+    int indMin = 0, muda = 0;
     float distance, min = 1;
     
     #pragma omp parallel for private(min,indMin,distance) reduction(+:x_centroid,y_centroid,nr_pontos)
@@ -60,8 +62,8 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K){
         indMin = 0;
         //float *arr = malloc(sizeof(float)*K);
 
-        //#pragma omp parallel for
-        for(int j=0;j<K;j++){
+        //#pragma omp parallel for private(min,indMin,distance)// aqui entra num loop "infinito"
+        for(int j=1;j<K;j++){
 
             //arr[j] = ((x[i] - clusters[j].x) * (x[i] - clusters[j].x)) + ((y[i] - clusters[j].y) * (y[i] - clusters[j].y));
             
@@ -98,10 +100,11 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K){
 
     }
 
+    #pragma omp parallel for reduction(||:muda)
     for(int i = 0; i<K; i++){
         if((centroid_novo[i].x!=clusters[i].x || centroid_novo[i].y!=clusters[i].y)){
             muda = 1;
-            break;
+            //break;
         }
         else{
             muda = 0;
