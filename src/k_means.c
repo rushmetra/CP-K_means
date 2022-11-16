@@ -10,7 +10,6 @@ typedef struct Cluster{
 
 }Cluster;
 
-
 void inicializa(float *x, float *y, Cluster *clusters, int N, int K){
   
     srand(10);
@@ -23,7 +22,6 @@ void inicializa(float *x, float *y, Cluster *clusters, int N, int K){
 
     }
 
-    #pragma omp parallel for
     for(int i = 0; i < K; i++) {
         clusters[i].x = x[i];
         clusters[i].y = y[i];
@@ -32,13 +30,12 @@ void inicializa(float *x, float *y, Cluster *clusters, int N, int K){
 
 }
 
-
 int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K){
     
     Cluster *centroid_novo = malloc(sizeof(Cluster)*K);
     float x_centroid[K], y_centroid[K], nr_pontos[K];
     
-    #pragma omp parallel for
+    /* Inicialization of the centroids */
     for(int i = 0; i < K; i++){
         x_centroid[i] = 0;
         y_centroid[i] = 0;
@@ -52,14 +49,14 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K){
     int indMin = 0, muda = 0;
     float distance, min = 1;
     
+    /* Assignment of each point to its nearest centroid */
     #pragma omp parallel for private(min,indMin,distance) reduction(+:x_centroid,y_centroid,nr_pontos)
     for(int i = 0; i < N; i++){
 
-        // Primeira iteração
+        /* First iteration */
         min = ((x[i] - clusters[0].x) * (x[i] - clusters[0].x)) + ((y[i] - clusters[0].y) * (y[i] - clusters[0].y));
         indMin = 0;
 
-        //#pragma omp parallel for // aqui entra num loop "infinito"
         for(int j=1;j<K;j++){
             
             distance = ((x[i] - clusters[j].x) * (x[i] - clusters[j].x)) + ((y[i] - clusters[j].y) * (y[i] - clusters[j].y));
@@ -77,7 +74,7 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K){
     
     }
 
-    #pragma omp parallel for
+    /* Calculation of the new centroid */
     for(int i = 0; i < K; i++){
 
         centroid_novo[i].x = x_centroid[i]/nr_pontos[i];
@@ -86,12 +83,11 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K){
 
     }
 
-    #pragma omp parallel for reduction(||:muda)
+    /* Check if the centroids have moved to determine if another iteration is necessary */
     for(int i = 0; i<K; i++) 
         muda = muda || (centroid_novo[i].x!=clusters[i].x || centroid_novo[i].y!=clusters[i].y);
     
-    
-    #pragma omp parallel for
+    /* Update the old centroid to the newly calculated one */
     for(int i=0;i<K;i++){
         clusters[i].x = centroid_novo[i].x;
         clusters[i].y = centroid_novo[i].y;
@@ -114,8 +110,6 @@ int k_means(float *x, float *y, Cluster *clusters, int N, int K){
     return i-1;
 
 }
-
-
 
 int main(int argc, char* argv[]){
 

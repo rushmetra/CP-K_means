@@ -1,21 +1,23 @@
 CC = gcc
 BIN = bin/
 SRC = src/
-EXEC = k_means
+EXECS = k_means_seq
+EXECP = k_means_par
 THREADS = 8
 
-CFLAGS = -O2 -Wall
+CFLAGS = -O2
 
 .DEFAULT_GOAL = k_means
 
 k_means: $(SRC)k_means.c
-	$(CC) $(CFLAGS) $(SRC)k_means.c -o $(BIN)$(EXEC)
+	$(CC) $(CFLAGS) $(SRC)k_means.c -o $(BIN)$(EXECS)
+	$(CC) $(CFLAGS) -fopenmp $(SRC)k_means.c -o $(BIN)$(EXECP)
 
 clean:
 	rm -r bin/*
 
 runseq:
-./$(BIN)$(EXEC) 10000000 $(CP_CLUSTERS)
+	./$(BIN)$(EXECS) 10000000 $(CP_CLUSTERS)
 
 runpar:
-./$(BIN)$(EXEC) 10000000 $(CP_CLUSTERS) $THREADS
+	./$(BIN)$(EXECP) 10000000 $(CP_CLUSTERS) $(THREADS)
