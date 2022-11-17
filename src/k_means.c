@@ -122,6 +122,7 @@ int main(int argc, char* argv[]){
     y = malloc(sizeof(float)*N);
     clusters = malloc(sizeof(Cluster)*K);
 
+    /* Check for -fopenmp flag in compilation, and if yes use said threads */
     #ifdef _OPENMP
     int nThreads = atoi(argv[3]);
     omp_set_num_threads(nThreads);
@@ -136,7 +137,6 @@ int main(int argc, char* argv[]){
         printf("Center: (%.3f,%.3f), Size: %d\n",clusters[i].x,clusters[i].y,clusters[i].nr_pontos);
     }
     printf("Iterations: %d\n",iter);
-
 
     return 0;
 
