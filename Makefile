@@ -3,7 +3,7 @@ BIN = bin/
 SRC = src/
 EXECS = k_means_seq
 EXECP = k_means_par
-THREADS = 8
+THREADS = 16
 
 CFLAGS = -O2
 

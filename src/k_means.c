@@ -56,14 +56,14 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K){
         /* First iteration */
         min = ((x[i] - clusters[0].x) * (x[i] - clusters[0].x)) + ((y[i] - clusters[0].y) * (y[i] - clusters[0].y));
         indMin = 0;
-
+        
         for(int j=1;j<K;j++){
             
             distance = ((x[i] - clusters[j].x) * (x[i] - clusters[j].x)) + ((y[i] - clusters[j].y) * (y[i] - clusters[j].y));
 
             if(distance < min){
-               min = distance;
-               indMin = j;
+                min = distance;
+                indMin = j;
             }
             
         }
