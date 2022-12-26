@@ -1,5 +1,6 @@
-src/k_meansOld.c
-a.out
+.gitignore
 pass
-.vscode
 bin
+src/a.out
+src/k_means_mpi_*
+*.pdf
