@@ -37,9 +37,6 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K, int rank,int
     float *x_centroid = malloc(sizeof(float)*K);
     float *y_centroid = malloc(sizeof(float)*K);
     float *nr_pontos = malloc(sizeof(float)*K);
-    float *x_centroid_reduced = malloc(sizeof(float)*K);
-    float *y_centroid_reduced = malloc(sizeof(float)*K);
-    float *nr_pontos_reduced = malloc(sizeof(float)*K);
     float distance, min;
     int indMin = 0, muda = 0;   
     
@@ -57,9 +54,6 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K, int rank,int
         x_centroid[i] = 0;
         y_centroid[i] = 0;
         nr_pontos[i] = 0;
-        x_centroid_reduced[i] = 0;
-        y_centroid_reduced[i] = 0;
-        nr_pontos_reduced[i] = 0;
     }
   
 
@@ -82,36 +76,69 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K, int rank,int
         nr_pontos[indMin] += 1;
         x_centroid[indMin] += x[i];
         y_centroid[indMin] += y[i];
-        
+
     }
 
-    MPI_Allreduce(nr_pontos,nr_pontos_reduced,K,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-    MPI_Allreduce(x_centroid,x_centroid_reduced,K,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-    MPI_Allreduce(y_centroid,y_centroid_reduced,K,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
 
+    if (rank == 0){
+        
+        float *x_centroid_buf = malloc(sizeof(float) * K * size );
+        float *y_centroid_buf = malloc(sizeof(float) * K * size );
+        float *nr_pontos_buf = malloc(sizeof(float) * K * size );
+
+
+        MPI_Gather(nr_pontos, K, MPI_FLOAT, nr_pontos_buf,K,MPI_FLOAT,0,MPI_COMM_WORLD);
+        MPI_Gather(x_centroid, K, MPI_FLOAT, x_centroid_buf,K,MPI_FLOAT,0,MPI_COMM_WORLD);
+        MPI_Gather(y_centroid, K, MPI_FLOAT, y_centroid_buf,K,MPI_FLOAT,0,MPI_COMM_WORLD);
+
+        for(int i = 0; i < K; i++){
+            x_centroid[i] = 0;
+            y_centroid[i] = 0;
+            nr_pontos[i] = 0;
+        }
+
+        /* "Reduce" dos valores calculados */
+        for(int i=0;i<size;i++){
+            for(int j=0;j<K;j++){
+                x_centroid[j] += x_centroid_buf[K*i+j];
+                y_centroid[j] += y_centroid_buf[K*i+j];
+                nr_pontos[j] += nr_pontos_buf[K*i+j];
+            }
+        }
     
+                
+        /* Calculation of the new centroid */
+        for(int i = 0; i < K; i++){
 
-    /* Calculation of the new centroid */
-    for(int i = 0; i < K; i++){
+            centroid_novo[i].x = x_centroid[i]/nr_pontos[i];
+            centroid_novo[i].y = y_centroid[i]/nr_pontos[i]; 
+            centroid_novo[i].nr_pontos = nr_pontos[i];
+            
+        }
 
-        centroid_novo[i].x = x_centroid_reduced[i]/nr_pontos_reduced[i];
-        centroid_novo[i].y = y_centroid_reduced[i]/nr_pontos_reduced[i]; 
-        centroid_novo[i].nr_pontos = nr_pontos_reduced[i];
+        /* Check if the centroids have moved to determine if another iteration is necessary */
+        for(int i = 0; i<K; i++) 
+            muda = muda || (centroid_novo[i].x!=clusters[i].x || centroid_novo[i].y!=clusters[i].y);
 
-    }
-
-    /* Check if the centroids have moved to determine if another iteration is necessary */
-    for(int i = 0; i<K; i++) 
-        muda = muda || (centroid_novo[i].x!=clusters[i].x || centroid_novo[i].y!=clusters[i].y);
-
-    /* Update the old centroid to the newly calculated one */
-    for(int i=0;i<K;i++){
-        clusters[i].x = centroid_novo[i].x;
-        clusters[i].y = centroid_novo[i].y;
-        clusters[i].nr_pontos = centroid_novo[i].nr_pontos;
+        /* Update the old centroid to the newly calculated one */
+        for(int i=0;i<K;i++){
+            clusters[i].x = centroid_novo[i].x;
+            clusters[i].y = centroid_novo[i].y;
+            clusters[i].nr_pontos = centroid_novo[i].nr_pontos;
+            
+        }
         
     }
+        
+    else{
+        
+        MPI_Gather(nr_pontos, K, MPI_FLOAT, NULL,0,MPI_FLOAT,0,MPI_COMM_WORLD);
+        MPI_Gather(x_centroid, K, MPI_FLOAT, NULL,0,MPI_FLOAT,0,MPI_COMM_WORLD);
+        MPI_Gather(y_centroid, K, MPI_FLOAT, NULL,0,MPI_FLOAT,0,MPI_COMM_WORLD);
+    }
 
+    MPI_Bcast(clusters, K*3, MPI_FLOAT, 0, MPI_COMM_WORLD);
+        
     return muda;
 
 }

@@ -85,32 +85,36 @@ int k_meansAux(float *x, float *y, Cluster *clusters, int N, int K, int rank,int
         
     }
 
-    MPI_Allreduce(nr_pontos,nr_pontos_reduced,K,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-    MPI_Allreduce(x_centroid,x_centroid_reduced,K,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-    MPI_Allreduce(y_centroid,y_centroid_reduced,K,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Reduce(nr_pontos,nr_pontos_reduced,K,MPI_FLOAT,MPI_SUM,0,MPI_COMM_WORLD);
+    MPI_Reduce(x_centroid,x_centroid_reduced,K,MPI_FLOAT,MPI_SUM,0,MPI_COMM_WORLD);
+    MPI_Reduce(y_centroid,y_centroid_reduced,K,MPI_FLOAT,MPI_SUM,0,MPI_COMM_WORLD);
 
-    
+    if (rank == 0){ 
 
-    /* Calculation of the new centroid */
-    for(int i = 0; i < K; i++){
+        /* Calculation of the new centroid */
+        for(int i = 0; i < K; i++){
 
-        centroid_novo[i].x = x_centroid_reduced[i]/nr_pontos_reduced[i];
-        centroid_novo[i].y = y_centroid_reduced[i]/nr_pontos_reduced[i]; 
-        centroid_novo[i].nr_pontos = nr_pontos_reduced[i];
+            centroid_novo[i].x = x_centroid_reduced[i]/nr_pontos_reduced[i];
+            centroid_novo[i].y = y_centroid_reduced[i]/nr_pontos_reduced[i]; 
+            centroid_novo[i].nr_pontos = nr_pontos_reduced[i];
+
+        }
+
+        /* Check if the centroids have moved to determine if another iteration is necessary */
+        for(int i = 0; i<K; i++) 
+            muda = muda || (centroid_novo[i].x!=clusters[i].x || centroid_novo[i].y!=clusters[i].y);
+
+        /* Update the old centroid to the newly calculated one */
+        for(int i=0;i<K;i++){
+            clusters[i].x = centroid_novo[i].x;
+            clusters[i].y = centroid_novo[i].y;
+            clusters[i].nr_pontos = centroid_novo[i].nr_pontos;
+            
+        }
 
     }
 
-    /* Check if the centroids have moved to determine if another iteration is necessary */
-    for(int i = 0; i<K; i++) 
-        muda = muda || (centroid_novo[i].x!=clusters[i].x || centroid_novo[i].y!=clusters[i].y);
-
-    /* Update the old centroid to the newly calculated one */
-    for(int i=0;i<K;i++){
-        clusters[i].x = centroid_novo[i].x;
-        clusters[i].y = centroid_novo[i].y;
-        clusters[i].nr_pontos = centroid_novo[i].nr_pontos;
-        
-    }
+    MPI_Bcast(clusters, K*3, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
     return muda;
 
